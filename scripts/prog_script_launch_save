@@ -1,0 +1,24 @@
+#!/bin/bash
+
+cd /home/hafsa/Desktop/mini_tp/
+
+(
+    ./prog_script_reset
+) &&
+
+(
+    (
+        clear &&
+        gcc -g program.c -o program -lm -D _GNU_SOURCE &&
+        ./program
+    ) &
+    (
+        taskset -c 3 ./prog_script_cpu_io
+    ) & (
+        taskset -c 2 watch -t -p -n 1 ./prog_script_freq
+    )
+
+    (csvstack log_frequency.csv log_cpu_io.csv) | csvsort -c 1 > temp_merge.csv && csvstack log_phase.csv temp_merge.csv > result_merge.csv
+
+    tail -n+2 result_merge.csv | DISPLAY=:0 xclip -sel c
+)

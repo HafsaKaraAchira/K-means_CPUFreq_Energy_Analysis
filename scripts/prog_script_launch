@@ -1,0 +1,9 @@
+#!/bin/bash
+
+parent_path=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
+
+    #(
+    #    taskset -c 3 $parent_path/scripts/prog_script_cpu_io
+    #) & (
+    #    taskset -c 2 watch -t -p -n 1 $parent_path/scripts/prog_script_freq
+    #)
