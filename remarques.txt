@@ -1,0 +1,32 @@
+phase 1 :
+    readpoints from file
+    
+phase 2 :
+    intitialize centers
+    
+phase 3 :
+    input checks
+    points-centers distance matrix calculation
+    clusters population count
+    calculate each cluster mean and sum
+    calculate each point energy (error square)
+    weight the point energy
+
+phase 4 :
+    loop : while there is points swap
+        for each point ( 
+                for each cluster (
+                    calculate point - center distance 
+                    compare with old distance
+                    update the two clusters infos if new min distance
+                )   
+            )
+
+phase 5 :
+    compute clusters energy
+
+phase 6 :
+    save points clusters and centers infos in files
+
+* phase 7 :
+    calculate variance and clusters summary

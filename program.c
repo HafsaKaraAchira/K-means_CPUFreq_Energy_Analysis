@@ -132,6 +132,10 @@ void kmeans_01 ( int dim_num, int point_num, int cluster_num, int it_max,
   double point_energy_min;
   int swap;
 
+/*****************************************************/
+
+  save_phase_time(1,3,0);
+
   *it_num = 0;
 /*  Idiot checks.*/
   if ( cluster_num < 1 )
@@ -161,6 +165,7 @@ void kmeans_01 ( int dim_num, int point_num, int cluster_num, int it_max,
   For each observation, calculate the distance from each cluster
   center, and assign to the nearest.
 */
+  
   for ( j = 0; j < point_num; j++ ) // iterate on points
   {
     point_energy_min = HUGE_VAL;
@@ -183,9 +188,11 @@ void kmeans_01 ( int dim_num, int point_num, int cluster_num, int it_max,
       }
     }
   }
+
 /*
   Determine the cluster population counts.
 */
+  
   i4vec_zeros ( cluster_num, cluster_population );
 
   for ( j = 0; j < point_num; j++ ) //iterate on points
@@ -253,12 +260,18 @@ void kmeans_01 ( int dim_num, int point_num, int cluster_num, int it_max,
         / ( double ) ( cluster_population[k] - 1 );
     }
   }
+  
+  save_phase_time(1,3,1);
+
+/*****************************************************/
+
 /*
   Examine each observation in turn to see if it should be
   reassigned to a different cluster.
 */
+  save_phase_time(1,4,0);
+  
   *it_num = 0;
-
   while ( *it_num < it_max )  //while not it_max reached
   {
     *it_num = *it_num + 1;
@@ -362,10 +375,15 @@ void kmeans_01 ( int dim_num, int point_num, int cluster_num, int it_max,
     */
     if ( swap == 0 ){ break;}
   }
+  
+  save_phase_time(1,4,1);
 
+/*****************************************************/
 /*
   Compute the cluster energies.
 */
+  save_phase_time(1,5,0);
+
   r8vec_zeros ( cluster_num, cluster_energy );
   for ( j = 0; j < point_num; j++ )
   {
@@ -379,6 +397,10 @@ void kmeans_01 ( int dim_num, int point_num, int cluster_num, int it_max,
     }
     cluster_energy[k] = cluster_energy[k] + point_energy;
   }
+
+  save_phase_time(1,5,1);
+
+/*****************************************************/
 
   free ( f );
   return;
@@ -406,12 +428,14 @@ int main()
 	// Initialization, should only be called once.
 	srand(time(NULL));
 
+  //system("nohup ./scripts/prog_script_launch &")   ;
+  
   /************* PHASE ******************/
 
   int dim_num = 2;
   int point_num = file_row_count("./results/points.csv") ;
   int cluster_num = 10 ;
-  int it_max = 24000000 , it_num = 0 ;
+  int it_max = 1000 , it_num = 0 ;
   double *point = ( double * ) malloc ( dim_num*point_num * sizeof ( double ) );
   int *cluster = ( int * ) malloc ( point_num * sizeof ( double ) ) ;
   double *cluster_center= ( double * ) malloc ( dim_num*point_num * sizeof ( double ) );
@@ -425,44 +449,46 @@ int main()
   /*****************************************************/
 
   //generate_dataset_file(dim_num,point_num,&seed,point,filename) ;
-  system("nohup ./scripts/prog_script_launch &")   ;
 
   /*****************************************************/
-
-  point = r8mat_data_read (filename,dim_num,point_num) ;
-
-  /*****************************************************/
-
   save_phase_time(1,1,0);
-    cluster_initialize_1(dim_num,point_num,cluster_num,point) ;
+    
+    point = r8mat_data_read (filename,dim_num,point_num) ;
+  
   save_phase_time(1,1,1);
 
   /*****************************************************/
-
   save_phase_time(1,2,0);
+  cluster_initialize_1(dim_num,point_num,cluster_num,point) ;
+  save_phase_time(1,2,1);
 
     kmeans_01 (dim_num,point_num,cluster_num,it_max,&it_num,
             point,cluster,cluster_center,
             cluster_population,cluster_energy) ;
   
-  save_phase_time(1,2,1);
-  
   /*****************************************************/
-  
+  save_phase_time(1,6,0);
+
   i4mat_write ("./results/clusters.csv",1,point_num,cluster) ;
   r8mat_write ("./results/centers.csv",dim_num,cluster_num,cluster_center) ;
 
+  save_phase_time(1,6,1);
+
+  /*****************************************************/
+  
+  save_phase_time(1,7,0);
   
   cluster_variance = cluster_variance_compute ( dim_num, point_num,cluster_num,
                       point,cluster, cluster_center) ;
-          
-
-  /*****************************************************/
 
   cluster_print_summary ( point_num, cluster_num,cluster_population, cluster_energy, cluster_variance ,it_num) ;
 
-  //system("pkill watch");
-	//system("killall -9 prog_script_cpu_io");
+  save_phase_time(1,7,1);
+
+  /*****************************************************/
+
+  system("pkill watch");
+	system("killall -9 prog_script_cpu_io");
 
 	return 0;
 }

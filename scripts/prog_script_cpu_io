@@ -1,5 +1,7 @@
 #!/bin/bash
 
+parent_path=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
+
 while true
 do
     (
@@ -20,7 +22,7 @@ do
             iotop -n2 -qqq -t -k -p $(pgrep -d',' program) | tail -1 | awk '{print $5+$7}';
             #pidstat 1 2 -ud -h -G program|tail -1|awk '{print $11+$12}'
         ) | xargs | sed 's/ /,/g'
-    ) | tee -a ../logs/log_cpu_io.csv
+    ) | tee -a $parent_path/../logs/log_cpu_io.csv
     
     #pidstat 1 2 -ud -h -G htop | tail -2 |awk '{print $9","$11","$12}'
 
