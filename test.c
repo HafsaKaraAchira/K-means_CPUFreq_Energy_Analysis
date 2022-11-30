@@ -18,6 +18,7 @@
 #include <unistd.h>
 #include <sys/resource.h>
 #include <fcntl.h>
+#include <stdint.h>
 #include "libs/kmeans_utils.c"
 
 #ifndef _GNU_SOURCE
@@ -421,6 +422,17 @@ int main()
 	//set priority
 	setpriority(PRIO_PROCESS, 0, -20);
 
+  struct rlimit rl = {120*1024*1024, 120*1024*1024}; 
+  struct rlimit ro ;
+  struct rlimit rc ;
+  getrlimit(RLIMIT_AS, &ro) ;
+  printf("Old limits: soft=%jd; hard=%jd\n",
+                  (intmax_t) ro.rlim_cur, (intmax_t) ro.rlim_max);
+  setrlimit(RLIMIT_AS, &rl);
+  getrlimit(RLIMIT_AS, &rc) ;
+  printf("New limits: soft=%jd; hard=%jd\n",
+                  (intmax_t) rc.rlim_cur, (intmax_t) rc.rlim_max);
+
 	// Initialization, should only be called once.
 	srand(time(NULL));
 
@@ -458,33 +470,6 @@ int main()
   cluster_initialize_1(dim_num,point_num,cluster_num,point) ;
   save_phase_time(1,2,1);
 
-    kmeans_01 (dim_num,point_num,cluster_num,it_max,&it_num,
-            point,cluster,cluster_center,
-            cluster_population,cluster_energy) ;
-  
-  /*****************************************************/
-  save_phase_time(1,6,0);
-
-  i4mat_write ("./results/clusters.csv",1,point_num,cluster) ;
-  r8mat_write ("./results/centers.csv",dim_num,cluster_num,cluster_center) ;
-
-  save_phase_time(1,6,1);
-
-  /*****************************************************/
-  
-  save_phase_time(1,7,0);
-  
-  cluster_variance = cluster_variance_compute ( dim_num, point_num,cluster_num,
-                      point,cluster, cluster_center) ;
-
-  cluster_print_summary ( point_num, cluster_num,cluster_population, cluster_energy, cluster_variance ,it_num) ;
-
-  save_phase_time(1,7,1);
-
-  /*****************************************************/
-
-  system("pkill watch");
-	system("killall -9 prog_script_cpu_io");
 
 	return 0;
 }
